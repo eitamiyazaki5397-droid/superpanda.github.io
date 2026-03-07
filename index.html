@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>テトリス作ってみた</title>
+<title>SUPER TETRIS MAX</title>
 <style>
 body{
   background:#111;
@@ -53,14 +53,73 @@ canvas{
   color:yellow;
   height:28px;
 }
+#pauseMenu{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.8);
+  color:white;
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
+}
+
+
+#pauseMenu button{
+  font-size:20px;
+  padding:10px 25px;
+  cursor:pointer;
+}
+
+#pauseButton{
+  position:fixed;
+  top:10px;
+  left:10px;
+  font-size:20px;
+  padding:10px 15px;
+  z-index:20;
+  display:none; 
+}
+
+
+#gameOverScreen{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.9);
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
+  font-size:30px;
+  z-index:30;
+}
+
+#gameOverScreen button{
+  font-size:20px;
+  padding:10px 25px;
+}
 </style>
 </head>
 <body>
 
-<div id="startScreen">
-  <h1>テトリス</h1>
-  <button onclick="startGame()">START</button>
-</div>
+
+    
+
+    <div id="startScreen">
+        <h1>SUPER TETRIS MAX</h1>
+      
+        <p>パスコードを入力</p>
+        <input id="passInput" type="number">
+        <br><br>
+      
+        <button onclick="checkPass()">START</button>
+        <p id="passMsg"></p>
+      </div>
 
 <h2>
 Score: <span id="score">0</span>
@@ -92,8 +151,23 @@ High Score: <span id="highScore">0</span>
 <button onpointerdown="softDrop()">▼</button>
 <button onpointerdown="hardDrop()">⏬</button>
 <button onpointerdown="holdPiece()">HOLD</button>
+<button id="pauseButton" onclick="togglePause()">⏸</button>
 </div>
+<div id="pauseMenu">
+    <h1>PAUSE</h1>
+  
+    <button onclick="resumeGame()">再開</button>
+    <button onclick="restartGame()">リスタート</button>
+    <button onclick="goTitle()">タイトル</button>
+  </div>
 
+  <div id="gameOverScreen">
+    <h1>GAME OVER</h1>
+    <p>Score: <span id="finalScore"></span></p>
+  
+    <button onclick="restartGame()">リスタート</button>
+    <button onclick="goTitle()">タイトル</button>
+  </div>
 <script>
 const ROWS=20,COLS=12,SIZE=20;
 const canvas=document.getElementById("board");
@@ -270,6 +344,7 @@ function drawGhost(){
 }
 
 function update(t=0){
+  if(paused) return;
   if(!gameRunning)return;
   if(t-dropTimer>dropInterval){
     current.y++;
@@ -299,6 +374,26 @@ document.addEventListener("keydown",e=>{
   if(e.key==="c"||e.key==="C") holdPiece();
 });
 
+let paused = false;
+
+document.addEventListener("keydown",function(e){
+
+  if(e.key === "Escape"){
+
+    paused = !paused;
+
+    const menu = document.getElementById("pauseMenu");
+
+    if(paused){
+      menu.style.display = "flex";
+    }else{
+      menu.style.display = "none";
+    }
+
+  }
+
+});
+
 /* BGM */
 function playTone(f,d){
   const o=audioCtx.createOscillator();
@@ -321,13 +416,30 @@ function startBGM(){
 }
 
 function endGame(){
-  gameRunning=false;
-  clearInterval(bgmTimer);
-  document.getElementById("startScreen").style.display="flex";
+
+gameRunning=false;
+clearInterval(bgmTimer);
+
+document.getElementById("finalScore").textContent = score;
+document.getElementById("gameOverScreen").style.display = "flex";
+
+}
+const password =123123123; // 好きな数字に変えられる
+
+function checkPass(){
+  const input = Number(document.getElementById("passInput").value);
+
+  if(input === password){
+    document.getElementById("passMsg").textContent = "OK！ゲーム開始";
+    startGame();
+  }else{
+    document.getElementById("passMsg").textContent = "パスコードが違う";
+  }
 }
 
 function startGame(){
   document.getElementById("startScreen").style.display="none";
+  document.getElementById("pauseButton").style.display="block";
   createBoard();
   audioCtx=new AudioContext();
   score=0;level=1;combo=0;
@@ -340,6 +452,65 @@ function startGame(){
   gameRunning=true;
   startBGM();
   update();
+  
+}
+
+function resumeGame(){
+  paused = false;
+  document.getElementById("pauseMenu").style.display="none";
+  update(); 
+}
+
+function restartGame(){
+
+document.getElementById("gameOverScreen").style.display="none";
+document.getElementById("pauseMenu").style.display="none";
+
+paused = false;
+
+createBoard();
+
+score = 0;
+level = 1;
+combo = 0;
+
+document.getElementById("score").textContent = 0;
+document.getElementById("level").textContent = 1;
+document.getElementById("combo").textContent = "";
+
+current = newPiece();
+next = newPiece();
+hold = null;
+canHold = true;
+
+gameRunning = true;
+
+update();
+}
+
+function goTitle(){
+
+document.getElementById("gameOverScreen").style.display="none";
+document.getElementById("pauseMenu").style.display="none";
+
+paused = false;
+gameRunning = false;
+
+document.getElementById("startScreen").style.display="flex";
+
+}
+
+function togglePause(){
+
+const menu = document.getElementById("pauseMenu");
+
+if(!paused){
+  paused = true;
+  menu.style.display = "flex";
+}else{
+  resumeGame();
+}
+
 }
 </script>
 </body>
