@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>テトリス作ってみた</title>
+<title>SUPER TETRIS MAX</title>
 <style>
 body{
   background:#111;
@@ -111,7 +111,7 @@ canvas{
     
 
     <div id="startScreen">
-        <h1>テトリス</h1>
+        <h1>SUPER TETRIS MAX</h1>
       
         <p>パスコードを入力</p>
         <input id="passInput" type="number">
@@ -169,7 +169,7 @@ High Score: <span id="highScore">0</span>
     <button onclick="goTitle()">タイトル</button>
   </div>
 <script>
-const ROWS=20,COLS=12,SIZE=20;
+const ROWS=20,COLS=10,SIZE=20;
 const canvas=document.getElementById("board");
 const ctx=canvas.getContext("2d");
 const nextCtx=document.getElementById("next").getContext("2d");
@@ -242,7 +242,9 @@ function collide(){
 function merge(){
   current.shape.forEach((row,y)=>{
     row.forEach((v,x)=>{
-      if(v) board[current.y+y][current.x+x]=current.color;
+      if(v){
+        board[current.y+y][current.x+x] = current.color;
+      }
     });
   });
 }
@@ -424,19 +426,27 @@ document.getElementById("finalScore").textContent = score;
 document.getElementById("gameOverScreen").style.display = "flex";
 
 }
-const password =123123123; // 好きな数字に変えられる
+
+const password = 123123123; // テトリスのパスワード
+const snakePass = 999999;   // Snakeのパスワード
 
 function checkPass(){
-  const input = Number(document.getElementById("passInput").value);
 
-  if(input === password){
-    document.getElementById("passMsg").textContent = "OK！ゲーム開始";
-    startGame();
-  }else{
-    document.getElementById("passMsg").textContent = "パスコードが違う";
-  }
+const input = Number(document.getElementById("passInput").value);
+
+if(input === snakePass){
+  location.href = "snake.html";
+  return;
 }
 
+if(input === password){
+  document.getElementById("passMsg").textContent = "OK！テトリス開始";
+  startGame();
+}else{
+  document.getElementById("passMsg").textContent = "パスコードが違う";
+}
+
+}
 function startGame(){
   document.getElementById("startScreen").style.display="none";
   document.getElementById("pauseButton").style.display="block";
